@@ -14,6 +14,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
+    # atomic decorator allows to cancel a transaction if any of its steps fails
     @transaction.atomic
     def disable(self):
         if self.active is False:

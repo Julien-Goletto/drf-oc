@@ -1,5 +1,4 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -23,7 +22,7 @@ class CategoryViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
     def get_queryset(self): # Either redefine queryset class attribute or get_queryset method
         return Category.objects.filter(active=True)
     
-    # Specific action on post method in order to desactivate categories
+    # Specific action on post method in order to disable categories
     @action(detail=True, methods=['post'])
     def disable(self, request, pk):
         # Disable the category
