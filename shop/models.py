@@ -37,6 +37,14 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @transaction.atomic
+    def disable(self):
+        if self.active == False:
+            return
+        self.active = False
+        self.save()
+        self.articles.update(active=False)
 
 
 class Article(models.Model):
