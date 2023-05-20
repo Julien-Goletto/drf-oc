@@ -1,18 +1,27 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from shop.models import Category, Product, Article
-from shop.serializers import CategorySerializer, ProductSerializer, ArticleSerializer
+from shop.serializers import CategoryListSerializer, CategoryDetailSerializer, \
+    ProductListSerializer, ProductDetailSerializer, ArticleSerializer
 
-class CategoryViewSet(ReadOnlyModelViewSet):
-    
-    serializer_class = CategorySerializer
+# Derived from ReadOnlyViewSet, to refactor rewriting of get_serializer_class method
+class CustomReadOnlyModeViewSet(ReadOnlyModelViewSet):
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+                return self.detail_serializer_class
+        return super().get_serializer_class()
+
+class CategoryViewSet(CustomReadOnlyModeViewSet):
+    serializer_class = CategoryListSerializer
+    detail_serializer_class = CategoryDetailSerializer
 
     def get_queryset(self): # Either redefine queryset class attribute or get_queryset method
         return Category.objects.filter(active=True)
 
-class ProductViewSet(ReadOnlyModelViewSet):
+class ProductViewSet(CustomReadOnlyModeViewSet):
     
-    serializer_class = ProductSerializer
+    serializer_class = ProductListSerializer
+    detail_serializer_class = ProductDetailSerializer
 
     def get_queryset(self):
         # filtering only available products first

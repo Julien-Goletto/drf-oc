@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from rest_framework import status
 
 from shop.models import Category, Product, Article
@@ -27,16 +27,28 @@ class TestCategory(ShopAPITestCase):
                 [
                     {
                         'id': category.pk,
-                        'active': category.active,
                         'name': category.name,
-                        'description': category.description,
                         'date_created': self.format_datetime(category.date_created),
                         'date_updated': self.format_datetime(category.date_updated),
-                        'products': [],
                     }
                 ]
         }
         self.assertEqual(response.json(), expected)
+    
+    def test_category_detail(self):
+        category = Category.objects.create(name='Fruits', active=True)
+        response = self.client.get(reverse('category-detail', kwargs={'pk': category.pk}))
+        expected = {
+            'id': category.pk,
+            'name': category.name,
+            'description': category.description,
+            'products': [],
+            'date_created': self.format_datetime(category.date_created),
+            'date_updated': self.format_datetime(category.date_updated),
+        }
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+        
 
     def test_create(self):
         # First check no category exists
@@ -56,7 +68,7 @@ class TestProduct(ShopAPITestCase):
         Product.objects.create(name='Orange', description='Juteuse et gorgée de soleil', active=False, category_id=category.id)
 
         self.assertEqual(self.client.get(self.url).status_code, status.HTTP_200_OK)
-        expected = {
+        expected_list = {
             'count': 1,
             'next': None,
             'previous': None,
@@ -65,19 +77,28 @@ class TestProduct(ShopAPITestCase):
                     {
                         'id': product.id,
                         'name': product.name,
+                        'date_created': self.format_datetime(product.date_created),
+                        'date_updated': self.format_datetime(product.date_updated),
+                    }
+                ]
+        }
+
+        expected_details = {
+                        'id': product.id,
+                        'name': product.name,
                         'description': product.description,
                         'active': product.active,
                         'articles': [],
                         'category_id': product.category_id,
                         'date_created': self.format_datetime(product.date_created),
                         'date_updated': self.format_datetime(product.date_updated),
-                    }
-                ]
         }
         
-        self.assertEqual(self.client.get(self.url + f'{product.id}/').status_code, status.HTTP_200_OK)
-        detailed_response = self.client.get(self.url)
-        self.assertEqual(detailed_response.json(), expected)
+        list_response = self.client.get(self.url)
+        self.assertEqual(list_response.json(), expected_list)
+        details_response = self.client.get(self.url + f'{product.id}/')
+        self.assertEqual(details_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(details_response.data, expected_details)
     
     def test_impossible_to_mutate_through_http_request(self):
         # Post test
