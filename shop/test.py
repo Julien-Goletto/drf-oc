@@ -28,6 +28,7 @@ class TestCategory(ShopAPITestCase):
                     {
                         'id': category.pk,
                         'name': category.name,
+                        'description': category.description,
                         'date_created': self.format_datetime(category.date_created),
                         'date_updated': self.format_datetime(category.date_updated),
                     }

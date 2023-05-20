@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, ValidationError
 from shop.models import Category, Product, Article
 
 
@@ -26,7 +26,18 @@ class ProductDetailSerializer(ModelSerializer):
 class CategoryListSerializer(ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'description', 'date_created', 'date_updated']
+
+    def validate_name(self, value):
+        if Category.objects.filter(name=value):
+            raise ValidationError('This Category already exists.')
+        return value
+    
+    # Checking if Cat name is present in Cat description for better SEO
+    def validate(self, data):
+        if data['name'] not in data['description']:
+            raise ValidationError('The category name must be repeated somehow in the description.')
+        return data
 
 class CategoryDetailSerializer(ModelSerializer):
     """ Defining product attribute by coupling with its own serializer
