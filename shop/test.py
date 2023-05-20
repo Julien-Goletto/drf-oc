@@ -21,14 +21,17 @@ class TestCategory(ShopAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected = [
             {
-              'id': category.pk,
-              'active': category.active,
-              'name': category.name,
-              'description': category.description,
-              'date_created': self.format_datetime(category.date_created),
-              'date_updated': self.format_datetime(category.date_updated),
+                'id': category.pk,
+                'active': category.active,
+                'name': category.name,
+                'description': category.description,
+                'date_created': self.format_datetime(category.date_created),
+                'date_updated': self.format_datetime(category.date_updated),
+                'products': [],
             }
         ]
+        print(response.json())
+        print(expected)
         self.assertEqual(response.json(), expected)
 
     def test_create(self):
