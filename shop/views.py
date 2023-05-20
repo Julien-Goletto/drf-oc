@@ -1,4 +1,7 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from django.db import transaction
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from shop.models import Category, Product, Article
 from shop.serializers import CategoryListSerializer, CategoryDetailSerializer, \
@@ -17,6 +20,21 @@ class CategoryViewSet(CustomReadOnlyModeViewSet):
 
     def get_queryset(self): # Either redefine queryset class attribute or get_queryset method
         return Category.objects.filter(active=True)
+    
+    # Specific action on post method in order to desactivate categories
+    @transaction.atomic
+    @action(detail=True, methods=['post'])
+    def disable(self, request, pk):
+        # Disable the category
+        category = self.get_object()
+        category.active = False
+        category.save()
+        
+        # Disable producs within this category
+        category.products.update(active=False)
+
+        return Response()
+
 
 class ProductViewSet(CustomReadOnlyModeViewSet):
     
