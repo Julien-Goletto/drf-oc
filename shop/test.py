@@ -19,19 +19,23 @@ class TestCategory(ShopAPITestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected = [
-            {
-                'id': category.pk,
-                'active': category.active,
-                'name': category.name,
-                'description': category.description,
-                'date_created': self.format_datetime(category.date_created),
-                'date_updated': self.format_datetime(category.date_updated),
-                'products': [],
-            }
-        ]
-        print(response.json())
-        print(expected)
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': 
+                [
+                    {
+                        'id': category.pk,
+                        'active': category.active,
+                        'name': category.name,
+                        'description': category.description,
+                        'date_created': self.format_datetime(category.date_created),
+                        'date_updated': self.format_datetime(category.date_updated),
+                        'products': [],
+                    }
+                ]
+        }
         self.assertEqual(response.json(), expected)
 
     def test_create(self):
@@ -52,17 +56,24 @@ class TestProduct(ShopAPITestCase):
         Product.objects.create(name='Orange', description='Juteuse et gorgée de soleil', active=False, category_id=category.id)
 
         self.assertEqual(self.client.get(self.url).status_code, status.HTTP_200_OK)
-        expected = [
-            {
-                'id': product.id,
-                'name': product.name,
-                'description': product.description,
-                'active': product.active,
-                'category_id': product.category_id,
-                'date_created': self.format_datetime(product.date_created),
-                'date_updated': self.format_datetime(product.date_updated),
-            }
-        ]
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results':
+                [
+                    {
+                        'id': product.id,
+                        'name': product.name,
+                        'description': product.description,
+                        'active': product.active,
+                        'articles': [],
+                        'category_id': product.category_id,
+                        'date_created': self.format_datetime(product.date_created),
+                        'date_updated': self.format_datetime(product.date_updated),
+                    }
+                ]
+        }
         
         self.assertEqual(self.client.get(self.url + f'{product.id}/').status_code, status.HTTP_200_OK)
         detailed_response = self.client.get(self.url)

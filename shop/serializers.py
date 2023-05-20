@@ -2,15 +2,20 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from shop.models import Category, Product, Article
 
 
-class ProductSerializer(ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'description', 'active', 'category_id', 'date_created', 'date_updated']
-
 class ArticleSerializer(ModelSerializer):
     class Meta:
         model = Article
         fields = ['id', 'name', 'description', 'active', 'price', 'product_id', 'date_created', 'date_updated']
+
+class ProductSerializer(ModelSerializer):
+    articles = SerializerMethodField()
+    def get_articles(self, instance):
+        queryset = instance.articles.filter(active=True)
+        return ArticleSerializer(queryset, many=True).data
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'active', 'category_id', 'articles', 'date_created', 'date_updated']
 
 class CategorySerializer(ModelSerializer):
     """ Defining product attribute by coupling with its own serializer
