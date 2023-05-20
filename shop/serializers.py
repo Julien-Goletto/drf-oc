@@ -5,10 +5,20 @@ from shop.models import Category, Product, Article
 class ArticleSerializer(ModelSerializer):
     class Meta:
         model = Article
-        fields = ['id', 'name', 'description', 'active', 'price', 'product_id', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'product', 'description', 'price', 'date_created', 'date_updated']
+    
+    def validate_price(self, value):
+        if value < 1:
+            raise ValidationError("The minimum price is 1€.")
+        return value
+
+    def validate_product(self, value):
+        print('ceci est le produit passé', value)
+        if value.active is False:
+            raise ValidationError("The associated product must be active")
+        return value
 
 class ProductListSerializer(ModelSerializer):
-
     class Meta:
         model = Product
         fields = ['id', 'name', 'date_created', 'date_updated']
