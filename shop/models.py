@@ -7,7 +7,7 @@ class fetchMixin:
     def call_external_api(self, method, url):
         return request(method, url)
 
-class Category(fetchMixin, models.Model):
+class Category(models.Model):
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -27,15 +27,8 @@ class Category(fetchMixin, models.Model):
         self.active = False
         self.save()
         self.products.update(active=False)
-    
-    # Declaring an additionnal property to
-    @property
-    def ecoscore(self):
-        response = self.call_external_api('GET', 'https://world.openfoodfacts.org/api/v0/product/3229820787015.json')
-        if response.status_code == status.HTTP_200_OK:
-            return response.json()['product']['ecoscore_grade']
 
-class Product(models.Model):
+class Product(fetchMixin, models.Model):
 
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -56,6 +49,13 @@ class Product(models.Model):
         self.active = False
         self.save()
         self.articles.update(active=False)
+    
+    # Declaring an additionnal property to
+    @property
+    def ecoscore(self):
+        response = self.call_external_api('GET', 'https://world.openfoodfacts.org/api/v0/product/3229820787015.json')
+        if response.status_code == status.HTTP_200_OK:
+            return response.json()['product']['ecoscore_grade']
 
 
 class Article(models.Model):

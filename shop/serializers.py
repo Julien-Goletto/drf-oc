@@ -21,7 +21,7 @@ class ArticleSerializer(ModelSerializer):
 class ProductListSerializer(ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'ecoscore', 'date_created', 'date_updated']
 
 class ProductDetailSerializer(ModelSerializer):
     articles = SerializerMethodField()
@@ -31,12 +31,12 @@ class ProductDetailSerializer(ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'active', 'category_id', 'articles', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'description', 'ecoscore', 'category_id', 'articles', 'date_created', 'date_updated']
 
 class CategoryListSerializer(ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'ecoscore', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'description', 'date_created', 'date_updated']
 
     def validate_name(self, value):
         if Category.objects.filter(name=value):
@@ -60,4 +60,4 @@ class CategoryDetailSerializer(ModelSerializer):
         return ProductDetailSerializer(queryset, many=True).data
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'ecoscore', 'products', 'date_created', 'date_updated']
+        fields = ['id', 'name', 'description', 'products', 'date_created', 'date_updated']

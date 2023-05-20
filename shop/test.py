@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse, reverse_lazy
 from rest_framework import status
+from unittest import mock
 
 from shop.models import Category, Product, Article
 
