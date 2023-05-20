@@ -7,14 +7,16 @@ from shop.models import Category, Product, Article
 from shop.serializers import CategoryListSerializer, CategoryDetailSerializer, \
     ProductListSerializer, ProductDetailSerializer, ArticleSerializer
 
-# Derived from ReadOnlyViewSet, to refactor rewriting of get_serializer_class method
-class CustomReadOnlyModeViewSet(ReadOnlyModelViewSet):
+# Mixin rewriting get_serializee_class for derived viewsets
+class MultipleSerializerMixin:
+    detail_serializer_class = None
+
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'retrieve' and self.detail_serializer_class:
                 return self.detail_serializer_class
         return super().get_serializer_class()
 
-class CategoryViewSet(CustomReadOnlyModeViewSet):
+class CategoryViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
     serializer_class = CategoryListSerializer
     detail_serializer_class = CategoryDetailSerializer
 
@@ -22,21 +24,14 @@ class CategoryViewSet(CustomReadOnlyModeViewSet):
         return Category.objects.filter(active=True)
     
     # Specific action on post method in order to desactivate categories
-    @transaction.atomic
     @action(detail=True, methods=['post'])
     def disable(self, request, pk):
         # Disable the category
-        category = self.get_object()
-        category.active = False
-        category.save()
-        
-        # Disable producs within this category
-        category.products.update(active=False)
-
+        self.get_object().disable()
         return Response()
 
 
-class ProductViewSet(CustomReadOnlyModeViewSet):
+class ProductViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):
     
     serializer_class = ProductListSerializer
     detail_serializer_class = ProductDetailSerializer
