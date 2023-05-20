@@ -12,7 +12,7 @@ class MultipleSerializerMixin:
 
     def get_serializer_class(self):
         if self.action == 'retrieve' and self.detail_serializer_class:
-                return self.detail_serializer_class
+            return self.detail_serializer_class
         return super().get_serializer_class()
 
 class CategoryViewSet(MultipleSerializerMixin, ReadOnlyModelViewSet):

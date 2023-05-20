@@ -4,6 +4,7 @@ from rest_framework import status
 from unittest import mock
 
 from shop.models import Category, Product, Article
+from shop.mocks import ECOSCORE_GRADE, mock_openfoodfact_success
 
 class ShopAPITestCase(APITestCase):
     # Helper function to harmonize time notation accordingly to API
@@ -33,7 +34,7 @@ class TestCategory(ShopAPITestCase):
                         'date_created': self.format_datetime(category.date_created),
                         'date_updated': self.format_datetime(category.date_updated),
                     }
-                ]
+                ],
         }
         self.assertEqual(response.json(), expected)
     
@@ -64,36 +65,37 @@ class TestCategory(ShopAPITestCase):
 class TestProduct(ShopAPITestCase):
     url = reverse_lazy('product-list')
 
+    @mock.patch('shop.models.Product.call_external_api', mock_openfoodfact_success)
     def test_product_list_and_details(self):
         category = Category.objects.create(name='Fruits', active=True)
         product = Product.objects.create(name='Abricot', description='Juteux et gorgé de soleil', active=True, category_id=category.id)
         Product.objects.create(name='Orange', description='Juteuse et gorgée de soleil', active=False, category_id=category.id)
 
         self.assertEqual(self.client.get(self.url).status_code, status.HTTP_200_OK)
+
+        expected_details = {
+                        'id': product.id,
+                        'name': product.name,
+                        'description': product.description,
+                        'ecoscore': ECOSCORE_GRADE,
+                        'category_id': product.category_id,
+                        'articles': [],
+                        'date_created': self.format_datetime(product.date_created),
+                        'date_updated': self.format_datetime(product.date_updated),
+        }
+
+        general_details = expected_details.copy()
+        for key in ['description', 'category_id', 'articles']:
+            del general_details[key]
+
         expected_list = {
             'count': 1,
             'next': None,
             'previous': None,
             'results':
                 [
-                    {
-                        'id': product.id,
-                        'name': product.name,
-                        'date_created': self.format_datetime(product.date_created),
-                        'date_updated': self.format_datetime(product.date_updated),
-                    }
+                    general_details,
                 ]
-        }
-
-        expected_details = {
-                        'id': product.id,
-                        'name': product.name,
-                        'description': product.description,
-                        'active': product.active,
-                        'articles': [],
-                        'category_id': product.category_id,
-                        'date_created': self.format_datetime(product.date_created),
-                        'date_updated': self.format_datetime(product.date_updated),
         }
         
         list_response = self.client.get(self.url)
